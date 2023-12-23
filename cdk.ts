@@ -12,7 +12,7 @@ dotenv.config({ processEnv: nestEnvironment });
 const app = new cdk.App();
 const stack = new cdk.Stack(app, 'ElianRssCartServiceStack', {
   env: {
-    region: nestEnvironment.AWS_REGION || 'eu-north-1',
+    region: nestEnvironment.PRODUCT_AWS_REGION || 'eu-north-1',
   },
 });
 
@@ -23,12 +23,6 @@ const cartService = new NodejsFunction(stack, 'cartServiceLambda', {
   environment: nestEnvironment,
   bundling: {
     externalModules: [
-      '@grpc/grpc-js',
-      '@grpc/proto-loader',
-      'amqp-connection-manager',
-      'amqplib',
-      'mqtt',
-      'nats',
       'mysql',
       'mysql2',
       'pg-query-stream',
@@ -37,6 +31,9 @@ const cartService = new NodejsFunction(stack, 'cartServiceLambda', {
       'tedious',
       'better-sqlite3',
       'oracledb',
+      '@nestjs/microservices',
+      '@nestjs/microservices/microservices-module',
+      '@nestjs/websockets/socket-module',
     ],
   },
 });
