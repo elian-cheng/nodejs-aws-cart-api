@@ -13,12 +13,17 @@ async function bootstrap(): Promise<Handler> {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
 
+  app.enableCors({
+    origin: (req, callback) => callback(null, true),
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
     }),
   );
+
   app.use(helmet());
   await app.init();
 

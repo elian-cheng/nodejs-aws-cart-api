@@ -7,6 +7,7 @@ DELETE FROM cart_items;
 -- Delete data from parent tables
 DELETE FROM orders;
 DELETE FROM carts;
+DELETE FROM products;
 DELETE FROM users;
 
 -- Enable foreign key checks again

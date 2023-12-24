@@ -22,7 +22,7 @@
     "cdk:bs": "npx cdk bootstrap",
     "cdk:deploy": "npx cdk deploy",
     "cdk:remove": "npx cdk destroy",
-    "build:deploy": "npm run build && npm run cdk:deploy"
+    "b:d": "npm run build && npm run cdk:deploy"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.3",
