@@ -50,7 +50,7 @@ SELECT
   '{"method": "credit_card", "amount": 100}'::jsonb AS payment,
   '{"address": "123 Main St", "city": "Cityville", "zipcode": "12345"}'::jsonb AS delivery,
   'Test order comments' AS comments,
-  CASE WHEN random() < 0.7 THEN 'PAYED' ELSE 'OPEN' END AS status,
+  CASE WHEN random() < 0.7 THEN 'APPROVED' ELSE 'OPEN' END AS status,
   floor(random() * 500 + 100) AS total
 FROM carts
 JOIN users ON carts.user_id = users.id;

@@ -1,6 +1,5 @@
 import knex from 'knex';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 
 const { PG_HOST, PG_PORT, PG_DB, PG_USER, PG_PASSWORD } = process.env;
 const dbOptions = {

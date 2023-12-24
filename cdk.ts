@@ -21,6 +21,7 @@ const cartService = new NodejsFunction(stack, 'cartServiceLambda', {
   functionName: 'cartService',
   entry: 'dist/main.js',
   environment: nestEnvironment,
+  timeout: cdk.Duration.seconds(5),
   bundling: {
     externalModules: [
       'mysql',
