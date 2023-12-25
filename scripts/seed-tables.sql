@@ -2,11 +2,21 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Seed users
-INSERT INTO users (name, email, password)
+INSERT INTO users (login, email, password)
 VALUES
-  ('elian_cheng', 'elian_cheng@test.com', 'TEST_PASSWORD');
+  ('elian_cheng', 'elian_cheng@test.com', 'TEST_PASSWORD'),
+  ('john_doe', 'johndoe@test.com', 'TEST_PASSWORD'),
+  ('jane_doe', 'janedoe@test.com', 'TEST_PASSWORD');
 
--- Seed products
+-- Create temporary products table
+CREATE TABLE products (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  price INTEGER NOT NULL CHECK (price >= 0)
+);
+
+-- Seed existing in DynamoDB products
 INSERT INTO products (id, title, description, price)
 VALUES
   ('3e4f08fa-1ee7-416e-95e7-d8a7dc6b6356', 'Lenovo IdeaPad L3', 'Powerful laptop with FHD display, stereo speakers, and long battery life. Ideal for work, school, and entertainment.', 930),
@@ -26,31 +36,33 @@ VALUES
   ('0ff4203f-54c8-4336-b5cd-e4b06b7da008', 'MSI Pro AP241', 'MSI Pro AP241 All-in-One PC with powerful processing, ergonomic 23.8-inch screen, and anti-flicker technology for enhanced comfort.', 1681);
 
 -- Seed carts
-INSERT INTO carts (user_id, status)
+INSERT INTO carts (user_id)
 SELECT
-  users.id,
-  CASE WHEN random() < 0.5 THEN 'OPEN' ELSE 'ORDERED' END
+  users.id
 FROM users;
 
 -- Seed cart_items
-INSERT INTO cart_items (cart_id, product_id, count)
+INSERT INTO cart_items (cart_id, product_id, count, price)
 SELECT
   carts.id AS cart_id,
   products.id AS product_id,
-  floor(random() * 5 + 1) AS count
+  floor(random() * 5 + 1) AS count,
+  products.price AS price
 FROM carts
 JOIN users ON carts.user_id = users.id
 JOIN products ON true;
 
 -- Seed orders
-INSERT INTO orders (user_id, cart_id, payment, delivery, comments, status, total)
+INSERT INTO orders (user_id, cart_id, payment, delivery, comments, total)
 SELECT
   users.id AS user_id,
   carts.id AS cart_id,
   '{"method": "credit_card", "amount": 100}'::jsonb AS payment,
   '{"address": "123 Main St", "city": "Cityville", "zipcode": "12345"}'::jsonb AS delivery,
   'Test order comments' AS comments,
-  CASE WHEN random() < 0.7 THEN 'APPROVED' ELSE 'OPEN' END AS status,
   floor(random() * 500 + 100) AS total
 FROM carts
 JOIN users ON carts.user_id = users.id;
+
+-- Drop the temporary products table
+DROP TABLE products;
