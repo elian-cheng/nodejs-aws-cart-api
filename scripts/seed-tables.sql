@@ -58,7 +58,7 @@ SELECT
   users.id AS user_id,
   carts.id AS cart_id,
   '{"method": "credit_card", "amount": 100}'::jsonb AS payment,
-  '{"address": "123 Main St", "city": "Cityville", "zipcode": "12345"}'::jsonb AS delivery,
+  '{"address": "123 Main St", "city": "Cityville", "zipcode": "12345", "firstName": "Elian", "lastName": "Cheng"}'::jsonb AS delivery,
   'Test order comments' AS comments,
   floor(random() * 500 + 100) AS total
 FROM carts

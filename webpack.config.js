@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 
-module.exports = function (options) {
+module.exports = (options, webpack) => {
   const lazyImports = [
     '@nestjs/microservices/microservices-module',
     '@nestjs/websockets/socket-module',
@@ -10,6 +8,21 @@ module.exports = function (options) {
 
   return {
     ...options,
+    entry: './src/handler.ts',
+    externals: [],
+    optimization: {
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            keep_classnames: true,
+          },
+        }),
+      ],
+    },
+    output: {
+      ...options.output,
+      libraryTarget: 'commonjs2',
+    },
     plugins: [
       ...options.plugins,
       new webpack.IgnorePlugin({
@@ -25,18 +38,5 @@ module.exports = function (options) {
         },
       }),
     ],
-    optimization: {
-      minimizer: [
-        new TerserPlugin({
-          terserOptions: {
-            keep_classnames: true,
-          },
-        }),
-      ],
-    },
-    output: {
-      ...options.output,
-      libraryTarget: 'commonjs2',
-    },
   };
 };

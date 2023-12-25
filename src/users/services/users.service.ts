@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { v4 } from 'uuid';
-import { User } from '../models';
-import pgClient from '../../db';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Repository } from 'typeorm';
+import { Users } from '../entity/Users';
 
 @Injectable()
 export class UsersService {
-  private readonly users: Record<string, User>;
+  constructor(
+    @InjectRepository(Users) private usersRepository: Repository<Users>,
+  ) {}
 
-  async findOne(userName: string): Promise<User> {
-    const user = await pgClient('users').where('name', userName).first();
-    return user;
+  async findOne(login: string): Promise<Users> {
+    return await this.usersRepository.findOne({ where: { login: login } });
   }
 
-  async createOne({ name, password }: User): Promise<User> {
-    const id = v4();
-    const newUser = (await pgClient('users')
-      .insert({ name, password })
-      .returning('*')) as any as User;
-
-    return newUser;
+  async createOne({ login, password }: Users): Promise<Users> {
+    return await this.usersRepository.save({
+      login,
+      password,
+    });
   }
 }

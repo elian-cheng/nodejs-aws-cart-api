@@ -8,16 +8,14 @@ import {
   Post,
   UseGuards,
   HttpStatus,
-  InternalServerErrorException,
-  BadRequestException,
 } from '@nestjs/common';
-import { BasicAuthGuard } from '../auth';
-import { Order, OrderService } from '../order';
+
+import { OrderService } from '../order';
 import { AppRequest, getUserIdFromRequest } from '../shared';
-import { calculateCartTotal } from './models-rules';
+
 import { CartService } from './services';
-import { UpdateUserCartDTO } from './dto/update-user-cart.dto';
-import { CheckoutOrderDTO } from 'src/order/dto/checkout-order.dto';
+import { BasicAuthGuard } from '../auth';
+import { calculateCartTotal } from './models-rules';
 
 @Controller('api/profile/cart')
 export class CartController {
@@ -37,24 +35,18 @@ export class CartController {
     return {
       statusCode: HttpStatus.OK,
       message: 'OK',
-      data: {
-        cart,
-        total: calculateCartTotal(cart),
-      },
+      data: { cart, total: calculateCartTotal(cart) },
     };
   }
 
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Put()
-  async updateUserCart(
-    @Req() req: AppRequest,
-    @Body() updateUserCartDTO: UpdateUserCartDTO,
-  ) {
+  async updateUserCart(@Req() req: AppRequest, @Body() body) {
     // TODO: validate body payload...
     const cart = await this.cartService.updateByUserId(
       getUserIdFromRequest(req),
-      updateUserCartDTO,
+      body,
     );
 
     return {
@@ -71,7 +63,6 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Delete()
   clearUserCart(@Req() req: AppRequest) {
-    console.log('delete', req);
     this.cartService.removeByUserId(getUserIdFromRequest(req));
 
     return {
@@ -83,56 +74,41 @@ export class CartController {
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Post('checkout')
-  async checkout(
-    @Req() req: AppRequest,
-    @Body() checkoutOrderDTO: CheckoutOrderDTO,
-  ) {
+  async checkout(@Req() req: AppRequest, @Body() body) {
     const userId = getUserIdFromRequest(req);
     const cart = await this.cartService.findByUserId(userId);
 
-    if (!(cart && cart.items.length)) {
-      throw new BadRequestException('Cart is empty');
+    if (!cart) {
+      const statusCode = HttpStatus.BAD_REQUEST;
+      req.statusCode = statusCode;
+
+      return {
+        statusCode,
+        message: 'Cart is empty',
+      };
     }
 
-    const { id: cartId, items } = cart;
+    const { id: cartId } = cart;
     const total = calculateCartTotal(cart);
-    let order: Order;
-    let cartStatus: string;
-    const { comment, ...address } = checkoutOrderDTO.address;
-    let trx = await this.cartService.createTransaction();
 
-    try {
-      order = await this.orderService.createTransacted(trx, {
-        delivery: {
-          type: 'post',
-          address: { ...address },
-        },
+    const order = this.orderService.create(
+      {
         user_id: userId,
-        cart_id: cartId,
-        comments: comment,
-        total,
-      } as any as Order);
-      const [{ status }] = await this.cartService.changeCartStatusTransacted(
-        trx,
-        cartId,
-      );
-      await trx.commit();
-      cartStatus = status;
-    } catch (error) {
-      await trx.rollback();
+        cart_id: body.cart_id,
+        address: body.address,
+        comment: body.address.comment,
+        status: 'inProgress',
+        total: total,
+      },
+      userId,
+    );
 
-      throw new InternalServerErrorException(
-        `Transaction failed and rolled back: ${error}`,
-      );
-    }
+    await this.cartService.setOrderStatus(userId, 'ORDERED');
 
     return {
       statusCode: HttpStatus.OK,
       message: 'OK',
-      data: {
-        cart_status: cartStatus,
-        order: { items: items, ...order },
-      },
+      data: { order },
     };
   }
 }
