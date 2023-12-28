@@ -8,7 +8,7 @@ module.exports = (options, webpack) => {
 
   return {
     ...options,
-    entry: './src/handler.ts',
+    entry: './src/main.ts',
     externals: [],
     optimization: {
       minimizer: [

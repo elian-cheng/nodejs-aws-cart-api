@@ -1,0 +1,23 @@
+#This folder will be created on the 'dependencies' stage so no copying is required
+node_modules
+
+#This folder will be created on the 'build' stage so no copying is required
+dist
+
+#These temporary and test folders and files are not required in production version
+cdk.out
+scripts
+**/**/*.spec.ts
+test
+
+# .envfile shouldn't be in the image even in the local build
+.env* 
+.eslint.js
+.pritierrc
+Dockerfile
+.dockerignore
+README.md
+
+# git data is not required inside the image
+.gitignore
+.git
