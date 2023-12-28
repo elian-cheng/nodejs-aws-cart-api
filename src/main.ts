@@ -13,7 +13,6 @@ async function bootstrap() {
     origin: (req, callback) => callback(null, true),
   });
   app.use(helmet());
-
   await app.listen(port);
 }
 bootstrap().then(() => {
